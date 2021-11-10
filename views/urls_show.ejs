@@ -24,10 +24,10 @@
       </div>
       <div class="card-footer text-muted">
         <h2>Edit</h2>
-        <form action="">
+        <form action="/urls/<%= shortURL %>" method="post">
           <label for="newURL">New URL:</label>
-          <input type="url" />
-          <button class="btn btn-primary mb-2">Submit</button>
+          <input type="url" value="<%= longURL %>" name="longURL" />
+          <button class="btn btn-primary mb-2" type="submit">Submit</button>
         </form>
       </div>
     </div>
