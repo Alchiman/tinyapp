@@ -1,9 +1,11 @@
 const { Template } = require("ejs");
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
@@ -38,10 +40,22 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+// this endpoint handles new long urls
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
+
+// this endpoint handles /login and set cookie
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  // res.send(username);
+  res.cookie("cookieName", username);
+  console.log("Cookies: ", req.cookies);
+  // console.log(username);
+});
+// this endpoint handles /login and set cookie2
+// app.get("/login", (req, res) => {});
 
 //updates the URL resource
 
