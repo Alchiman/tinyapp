@@ -19,9 +19,9 @@
 
         
         <% if(username){ %>
-          <a href="#" class="nav-item nav-link">Logged In As: <%=username%></a>
+          <a href="#" style="color: black;"class="nav-item nav-link dark">Logged In As: <%=username%></a>
           <form action="/logout" method="POST">
-            <button type="submit">LOGOUT</button>
+            <button class="btn btn-secondary" type="submit">LOGOUT</button>
             <% }else { %>
               <form class="form-inline " action="/login" method="POST">
                 <input
