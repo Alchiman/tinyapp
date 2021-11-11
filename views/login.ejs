@@ -16,7 +16,7 @@
     <%- include('partials/_header') %> <% if (user_id){ %>
 
     <form method="POST" action="/logout">
-      <strong>Logged in as:</strong> <%= vars.user_id %>&nbsp;
+      <strong>Logged in as:</strong> <%= user[user_id].email %>&nbsp;
       <input type="submit" value="LOGOUT" />
     </form>
     }<% } else{ %>
