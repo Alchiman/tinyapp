@@ -1,10 +1,10 @@
-const { Template } = require("ejs");
+// const { Template } = require("ejs");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-const { json } = require("express");
+// const { json } = require("express");
 app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -16,17 +16,17 @@ const listOfUsers = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: "123",
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: "123",
   },
   user3RandomID: {
     id: "user3RandomID",
     email: "alireza.chaychi@gmail.com",
-    password: "password",
+    password: "000",
   },
 };
 
@@ -52,15 +52,27 @@ const emailExists = function(checkingEmail) {
     return false;
   }
 };
+const userAuth = function(email, password) {
+  // console.log("this is the user sent email", email);
+  // console.log("this is the user sent passwor", password);
 
-const userAuthentication = function(userDb, email, password) {
-  for (const key in userDb) {
-    if (userDb[key].email === email && userDb[key].password === password) {
-      return true;
+  for (const userID in listOfUsers) {
+    if (
+      listOfUsers[userID].email === email &&
+      listOfUsers[userID].password === password
+    ) {
+      return listOfUsers[userID].id;
     }
-    return false;
   }
+  // console.log(listOfUsers);
+  // console.log("this is database email", listOfUsers["user3RandomID"].email);
+  // console.log(
+  //   "this is database password",
+  //   listOfUsers["user3RandomID"].password
+  // );
+  return false;
 };
+
 // end of functions
 // ============================================
 // get requests here except for the weird ones
@@ -136,23 +148,35 @@ app.post("/register", (req, res) => {
 
 // this endpoint handles post for login
 app.post("/login", (req, res) => {
-  const templateVars = {
-    user_id: req.cookies["user_id"],
-    user: listOfUsers,
-  };
-  // const userId = templateVars.user[]
   const { email, password } = req.body;
-  if (emailExists) {
-    // res.cookie("user_id", );
-    res.redirect("/urls");
-  } else {
-    res.status(403);
-    res.send("The email or the password is wrong ");
+  const userId = userAuth(email, password);
+  if (!email || !password) {
+    res.status(403).send("your password/email field is empty");
   }
 
-  // if (userAuthentication(listOfUsers, email, password)) {
-  //   res.cookie("user_id", randomID);
-  //   res.redirect("/urls");
+  if (!userId) {
+    res.status(403).send("error loggin in ");
+  }
+  res.cookie("user_id", userId);
+  res.redirect("/urls");
+
+  // for (const userId in listOfUsers) {
+  //   if (
+  //     listOfUsers[userId].email === email &&
+  //     listOfUsers[userId].password === password
+  //   ) {
+  //     res.cookie("user_id", listOfUsers[userId]["id"]);
+  //   } else {
+  //     res.status(403);
+  //     res.send("The email or the password is wrong ");
+  //   }
+  // }
+});
+
+// endpoint for logout
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/urls");
 });
 
 // this endpoint handles posts for new
@@ -160,12 +184,6 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
-  res.redirect("/urls");
-});
-
-// endpoint for logout
-app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
