@@ -9,6 +9,8 @@ app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// dataBase starts here:
+//============================================
 // object holding our user data
 const listOfUsers = {
   userRandomID: {
@@ -28,6 +30,9 @@ const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
+// dataBase ends here:
+//============================================
+// Functions start here:
 // this is my randomizer function
 function generateRandomString() {
   return Math.random()
@@ -35,14 +40,31 @@ function generateRandomString() {
     .substring(4, 9);
 }
 
-const emailLookup = function(userDB) {
-  for (key in userDB) {
-    if (userDB[key].email) {
-      return false;
+const emailExists = function(userDB, email) {
+  for (const key in userDB) {
+    if (userDB[key].email === email) {
+      return true;
     }
-    return true;
+    return false;
   }
 };
+
+// const authenticateUser = function(userDb, email, password) {
+//   for (key in userDb) {
+//     if (!emailLookup) {
+//       res.status(403);
+//       res.send("The email is incorrect");
+//     }
+//     if (userDb[key].password !== password) {
+//       res.status(403);
+//       res.send("The password is incorrect");
+//     }
+//   }
+//   return { data: userDb, err: null };
+// };
+// end of functions
+// ============================================
+// get requests here except for the weird ones
 
 // this is the home endpoint
 app.get("/", (req, res) => {
@@ -57,27 +79,9 @@ app.get("/urls.json", (req, res) => {
 app.get("/register", (req, res) => {
   res.render("register");
 });
-
-// register post endpoint
-app.post("/register", (req, res) => {
-  const randomID = generateRandomString();
-  const email = req.body.email;
-  const password = req.body.password;
-  listOfUsers[randomID] = { id: randomID, email: email, password: password };
-  if (!emailLookup(listOfUsers)) {
-    res.status(400);
-    res.send("Use another email");
-  }
-
-  if (email === "" || password === "") {
-    res.status(400);
-    res.send("page not found");
-  }
-
-  res.cookie("user_id", randomID);
-  res.redirect("/urls");
-  console.log(listOfUsers);
-  // res.json(listOfUsers);
+// login get endpoint
+app.get("/login", (req, res) => {
+  res.render("login");
 });
 
 // here is the endpoint for list of existing urls
@@ -91,20 +95,48 @@ app.get("/urls/new", (req, res) => {
   const templateVars = { userId: req.cookies["user_id"] };
   res.render("urls_new", templateVars);
 });
+// end of get requests
+// ============================================
+// post requests start here:
+
+// register post endpoint
+app.post("/register", (req, res) => {
+  const randomID = generateRandomString();
+  const { email, password } = req.body;
+  if (emailExists(listOfUsers, email)) {
+    res.status(400);
+    res.send("Use another email");
+  }
+
+  if (email === "" || password === "") {
+    res.status(400);
+    res.send("page not found");
+  } else {
+    listOfUsers[randomID] = { id: randomID, email: email, password: password };
+  }
+
+  res.cookie("user_id", randomID);
+  res.redirect("/urls");
+  // res.json(listOfUsers);
+});
+
+// this endpoint handles post for login
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  if (!emailExists(listOfUsers, email)) {
+    res.status(403);
+    res.send("The email does not exist ");
+  }
+
+  res.cookie("user_id", randomID);
+  // res.redirect("/urls");
+});
 
 // this endpoint handles posts for new
-
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
-  res.redirect("/urls");
-});
-
-// this endpoint handles /login and set cookie
-app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("user_id", username);
   res.redirect("/urls");
 });
 
@@ -113,8 +145,8 @@ app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/urls");
 });
-//updates the URL resource
 
+//updates the URL resource
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   const longURL = req.body.longURL;
@@ -133,6 +165,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // app.get("/urls/:shorURL", (req, res) => {
 //   req.render("urls_new");
 // });
+
+// end of post requests
+// ============================================
+// wierd gets that have to be at the end maybe:
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;

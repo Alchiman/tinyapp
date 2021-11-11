@@ -19,11 +19,13 @@
 
         
         <% if(userId){ %>
-          <a href="#" style="color: black;"class="nav-item nav-link dark">Logged In As: <%=userId%></a>
+          <a href="#" style="color: black;"class="nav-item nav-link">Logged In As: <%=userId%></a>
           <form action="/logout" method="POST">
             <button class="btn btn-secondary" type="submit">LOGOUT</button>
             <% }else { %>
-              <form class="form-inline " action="/login" method="POST">
+              <a class="nav-item nav-link" href="/register">Register</a>
+              <a class="nav-item nav-link" href="/login">Login</a>
+              <!-- <form class="form-inline " action="/login" method="POST">
                 <input
                   class="form-control mr-sm-2"
                   name="username"
@@ -32,7 +34,7 @@
                 /><button class="btn btn-outline-dark" type="submit">
                   LOGIN
                 </button>
-              </form>
+              </form> -->
 
 
         <% } %>
