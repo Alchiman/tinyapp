@@ -22,6 +22,7 @@ const listOfUsers = {
     password: "dishwasher-funk",
   },
 };
+
 // object holding our url data
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
@@ -42,11 +43,6 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// app.get("/hello", (req, res) => {
-//   const templateVars = { greeting: "Hello World!" };
-//   res.render("hello_world", templateVars);
-// });
-
 // register get endpoint
 app.get("/register", (req, res) => {
   res.render("register");
@@ -58,39 +54,42 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   listOfUsers[randomID] = { id: randomID, email: email, password: password };
-  res.cookie("user_ID", randomID);
+  res.cookie("user_id", randomID);
+  res.redirect("/urls");
   // res.json(listOfUsers);
 });
 
 // here is the endpoint for list of existing urls
 app.get("/urls", (req, res) => {
-  const templateVars = { username: req.cookies["userName"], urls: urlDatabase };
+  const templateVars = { userId: req.cookies["user_id"], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 // endpoint for creating new urls
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["userName"] };
+  const templateVars = { userId: req.cookies["user_id"] };
   res.render("urls_new", templateVars);
 });
 
 // this endpoint handles posts for new
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  res.send("Ok");
+  const longURL = req.body.longURL;
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = longURL;
+  res.redirect("/urls");
 });
 
 // this endpoint handles /login and set cookie
 app.post("/login", (req, res) => {
   const username = req.body.username;
-  res.cookie("userName", username);
+  res.cookie("user_id", username);
   res.redirect("/urls");
 });
 
 // endpoint for logout
 app.post("/logout", (req, res) => {
-  res.clearCookie("userName");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 //updates the URL resource
@@ -128,7 +127,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: shortURL,
     longURL: urlDatabase[shortURL],
-    username: req.cookies["userName"],
+    userId: req.cookies["user_id"],
   };
 
   res.render("urls_show", templateVars);
