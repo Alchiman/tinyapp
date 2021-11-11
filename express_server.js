@@ -9,9 +9,9 @@ app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// dataBase starts here:
+// Objects:
 //============================================
-// object holding our user data
+// userData
 const listOfUsers = {
   userRandomID: {
     id: "userRandomID",
@@ -23,45 +23,44 @@ const listOfUsers = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
+  user3RandomID: {
+    id: "user3RandomID",
+    email: "alireza.chaychi@gmail.com",
+    password: "password",
+  },
 };
 
-// object holding our url data
+// UrlData
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
-// dataBase ends here:
+
 //============================================
 // Functions start here:
-// this is my randomizer function
 function generateRandomString() {
   return Math.random()
     .toString(15)
     .substring(4, 9);
 }
 
-const emailExists = function(userDB, email) {
-  for (const key in userDB) {
-    if (userDB[key].email === email) {
+const emailExists = function(checkingEmail) {
+  for (const userId in userDB) {
+    if (listOfusers[userId].email === checkingEmail) {
       return true;
     }
     return false;
   }
 };
 
-// const authenticateUser = function(userDb, email, password) {
-//   for (key in userDb) {
-//     if (!emailLookup) {
-//       res.status(403);
-//       res.send("The email is incorrect");
-//     }
-//     if (userDb[key].password !== password) {
-//       res.status(403);
-//       res.send("The password is incorrect");
-//     }
-//   }
-//   return { data: userDb, err: null };
-// };
+const userAuthentication = function(userDb, email, password) {
+  for (const key in userDb) {
+    if (userDb[key].email === email && userDb[key].password === password) {
+      return true;
+    }
+    return false;
+  }
+};
 // end of functions
 // ============================================
 // get requests here except for the weird ones
@@ -77,6 +76,13 @@ app.get("/urls.json", (req, res) => {
 
 // register get endpoint
 app.get("/register", (req, res) => {
+  const templateVars = {
+    vars: {
+      shortURL: req.params.id,
+      fullURL: urlDatabase[req.params.id],
+      username: req.cookies["user_id"],
+    },
+  };
   res.render("register");
 });
 // login get endpoint
@@ -103,7 +109,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/register", (req, res) => {
   const randomID = generateRandomString();
   const { email, password } = req.body;
-  if (emailExists(listOfUsers, email)) {
+  if (emailExists(email)) {
     res.status(400);
     res.send("Use another email");
   }
@@ -123,13 +129,17 @@ app.post("/register", (req, res) => {
 // this endpoint handles post for login
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  if (!emailExists(listOfUsers, email)) {
+  if (emailExists) {
+    res.cookie("user_id", randomID);
+    res.redirect("/urls");
+  } else {
     res.status(403);
-    res.send("The email does not exist ");
+    res.send("The email or the password is wrong ");
   }
 
-  res.cookie("user_id", randomID);
-  // res.redirect("/urls");
+  // if (userAuthentication(listOfUsers, email, password)) {
+  //   res.cookie("user_id", randomID);
+  //   res.redirect("/urls");
 });
 
 // this endpoint handles posts for new
