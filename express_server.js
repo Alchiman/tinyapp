@@ -115,11 +115,20 @@ app.get("/urls", (req, res) => {
 
 // endpoint for creating new urls
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user_id: req.cookies["user_id"], users: listOfUsers };
-  if (urlDatabase[req.params.id]) {
-    res.render("urls_show", templateVars);
+  const templateVars = {
+    user_id: req.cookies["user_id"],
+    users: listOfUsers,
+  };
+  if (req.cookies["user_id"]) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
   }
-  res.render("urls_new", templateVars);
+
+  // if (urlDatabase[req.params.id]) {
+  //   res.render("urls_show", templateVars);
+  // }
+  // res.render("urls_new", templateVars);
 });
 // end of get requests
 // ============================================
