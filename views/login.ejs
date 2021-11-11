@@ -13,6 +13,13 @@
     />
   </head>
   <body>
+    <%- include('partials/_header') %> <% if (user_id){ %>
+
+    <form method="POST" action="/logout">
+      <strong>Logged in as:</strong> <%= vars.user_id %>&nbsp;
+      <input type="submit" value="LOGOUT" />
+    </form>
+    }<% } else{ %>
     <body class="text-center">
       <form class="form-signin" action="/login" method="POST">
         <h1 class="h3 mb-3 font-weight-normal">Please Log in</h1>
@@ -38,6 +45,7 @@
           Log in
         </button>
       </form>
+      <% } %>
     </body>
   </body>
 </html>

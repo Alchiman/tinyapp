@@ -45,8 +45,8 @@ function generateRandomString() {
 }
 
 const emailExists = function(checkingEmail) {
-  for (const userId in userDB) {
-    if (listOfusers[userId].email === checkingEmail) {
+  for (const userId in listOfUsers) {
+    if (listOfUsers[userId].email === checkingEmail) {
       return true;
     }
     return false;
@@ -77,28 +77,36 @@ app.get("/urls.json", (req, res) => {
 // register get endpoint
 app.get("/register", (req, res) => {
   const templateVars = {
-    vars: {
-      shortURL: req.params.id,
-      fullURL: urlDatabase[req.params.id],
-      username: req.cookies["user_id"],
-    },
+    shortURL: req.params.id,
+    fullURL: urlDatabase[req.params.id],
+    user_id: req.cookies["user_id"],
+    user: listOfUsers,
   };
-  res.render("register");
+  res.render("register", templateVars);
 });
 // login get endpoint
 app.get("/login", (req, res) => {
-  res.render("login");
+  const templateVars = {
+    shortURL: req.params.id,
+    fullURL: urlDatabase[req.params.id],
+    user_id: req.cookies["user_id"],
+    user: listOfUsers,
+  };
+  res.render("login", templateVars);
 });
 
 // here is the endpoint for list of existing urls
 app.get("/urls", (req, res) => {
-  const templateVars = { userId: req.cookies["user_id"], urls: urlDatabase };
+  const templateVars = { user_id: req.cookies["user_id"], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 // endpoint for creating new urls
 app.get("/urls/new", (req, res) => {
-  const templateVars = { userId: req.cookies["user_id"] };
+  const templateVars = { user_id: req.cookies["user_id"], users: listOfUsers };
+  if (urlDatabase[req.params.id]) {
+    res.render("urls_show", templateVars);
+  }
   res.render("urls_new", templateVars);
 });
 // end of get requests
@@ -119,18 +127,23 @@ app.post("/register", (req, res) => {
     res.send("page not found");
   } else {
     listOfUsers[randomID] = { id: randomID, email: email, password: password };
+    res.cookie("user_id", randomID);
+    res.redirect("/urls");
   }
 
-  res.cookie("user_id", randomID);
-  res.redirect("/urls");
   // res.json(listOfUsers);
 });
 
 // this endpoint handles post for login
 app.post("/login", (req, res) => {
+  const templateVars = {
+    user_id: req.cookies["user_id"],
+    user: listOfUsers,
+  };
+  // const userId = templateVars.user[]
   const { email, password } = req.body;
   if (emailExists) {
-    res.cookie("user_id", randomID);
+    // res.cookie("user_id", );
     res.redirect("/urls");
   } else {
     res.status(403);
@@ -158,8 +171,14 @@ app.post("/logout", (req, res) => {
 
 //updates the URL resource
 app.post("/urls/:id", (req, res) => {
-  const shortURL = req.params.id;
-  const longURL = req.body.longURL;
+  const templateVars = {
+    shortURL: req.params.id,
+    fullURL: urlDatabase[req.params.id],
+    user_id: req.cookies["user_id"],
+    user: listOfUsers,
+  };
+  const shortURL = templateVars.shortURL;
+  const longURL = templateVars.longURL;
   urlDatabase[shortURL] = longURL;
   res.redirect("/urls");
   // const shortURL = res;
@@ -194,7 +213,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: shortURL,
     longURL: urlDatabase[shortURL],
-    userId: req.cookies["user_id"],
+    user_id: req.cookies["user_id"],
   };
 
   res.render("urls_show", templateVars);
