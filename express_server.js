@@ -4,9 +4,25 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
+const { json } = require("express");
 app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// object holding our user data
+const listOfUsers = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+// object holding our url data
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
@@ -17,7 +33,7 @@ function generateRandomString() {
     .toString(15)
     .substring(4, 9);
 }
-// this is my home endpoint
+// this is the home endpoint
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -30,6 +46,21 @@ app.get("/urls.json", (req, res) => {
 //   const templateVars = { greeting: "Hello World!" };
 //   res.render("hello_world", templateVars);
 // });
+
+// register get endpoint
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+// register post endpoint
+app.post("/register", (req, res) => {
+  const randomID = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  listOfUsers[randomID] = { id: randomID, email: email, password: password };
+  res.cookie("user_ID", randomID);
+  // res.json(listOfUsers);
+});
 
 // here is the endpoint for list of existing urls
 app.get("/urls", (req, res) => {
