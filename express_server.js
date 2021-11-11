@@ -34,6 +34,16 @@ function generateRandomString() {
     .toString(15)
     .substring(4, 9);
 }
+
+const emailLookup = function(userDB) {
+  for (key in userDB) {
+    if (userDB[key].email) {
+      return false;
+    }
+    return true;
+  }
+};
+
 // this is the home endpoint
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -54,8 +64,19 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   listOfUsers[randomID] = { id: randomID, email: email, password: password };
+  if (!emailLookup(listOfUsers)) {
+    res.status(400);
+    res.send("Use another email");
+  }
+
+  if (email === "" || password === "") {
+    res.status(400);
+    res.send("page not found");
+  }
+
   res.cookie("user_id", randomID);
   res.redirect("/urls");
+  console.log(listOfUsers);
   // res.json(listOfUsers);
 });
 
