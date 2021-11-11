@@ -78,6 +78,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
+// come back to to this later for edit
+// app.get("/urls/:shorURL", (req, res) => {
+//   req.render("urls_new");
+// });
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
@@ -93,7 +97,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: shortURL,
     longURL: urlDatabase[shortURL],
-    username: req.cookies["username"],
+    username: req.cookies["userName"],
   };
 
   res.render("urls_show", templateVars);
