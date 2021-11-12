@@ -1,7 +1,7 @@
-// const { Template } = require("ejs");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const bcrypt = require("bcryptjs");
 
 const app = express();
 
@@ -67,7 +67,8 @@ const userAuth = function(email, password) {
   for (const userID in listOfUsers) {
     if (
       listOfUsers[userID].email === email &&
-      listOfUsers[userID].password === password
+      bcrypt.compareSync(password, listOfUsers[userID].password)
+      // listOfUsers[userID].password === password
     ) {
       return listOfUsers[userID].id;
     }
@@ -203,6 +204,7 @@ app.get("/urls/:id", (req, res) => {
 app.post("/register", (req, res) => {
   const randomID = generateRandomString();
   const { email, password } = req.body;
+
   if (emailExists(email)) {
     res.status(400);
     res.send("Use another email");
@@ -212,7 +214,12 @@ app.post("/register", (req, res) => {
     res.status(400);
     res.send("page not found");
   } else {
-    listOfUsers[randomID] = { id: randomID, email: email, password: password };
+    listOfUsers[randomID] = {
+      id: randomID,
+      email: email,
+      password: bcrypt.hashSync(password, 10),
+    };
+    console.log(listOfUsers[randomID]);
     res.cookie("user_id", randomID);
     res.redirect("/urls");
   }
@@ -224,6 +231,7 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const userId = userAuth(email, password);
+
   if (!email || !password) {
     res.status(403).send("your password/email field is empty");
   }
