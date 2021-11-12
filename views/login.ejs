@@ -12,7 +12,7 @@
       crossorigin="anonymous"
     />
   </head>
-  <body>
+  <body class="text-center">
     <%- include('partials/_header') %> <% if (user_id){ %>
 
     <form method="POST" action="/logout">
@@ -21,9 +21,15 @@
     </form>
     }<% } else{ %>
     <body class="text-center">
-      <form class="form-signin" action="/login" method="POST">
-        <h1 class="h3 mb-3 font-weight-normal">Please Log in</h1>
-        <label for="inputEmail" class="sr-only">Email address</label>
+      <form
+        style="width: 500px;margin: auto;"
+        class="form-signin"
+        action="/login"
+        method="POST"
+      >
+        <br />
+        <h1 class="h3 mb-3 font-weight-normal">Please Log in!</h1>
+
         <input
           type="email"
           name="email"
@@ -32,7 +38,6 @@
           required=""
           autofocus=""
         />
-        <label for="inputPassword" class="sr-only">Password</label>
         <input
           type="password"
           class="form-control"
@@ -41,11 +46,10 @@
           name="password"
         />
         <div class="checkbox mb-3"></div>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">
+        <button class="btn btn-lg btn-dark btn-block" type="submit">
           Log in
         </button>
       </form>
       <% } %>
     </body>
-  </body>
 </html>
