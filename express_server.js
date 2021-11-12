@@ -90,19 +90,26 @@ return undefined otherwise
 filter the undefined results
 
   */
-
-  const entries = Object.keys(urlDatabase)
-    .map((shortURL) => {
-      const entry = urlDatabase[shortURL];
-      if (entry.userID === userID) {
-        return [shortURL, entry];
-      } else {
-        return undefined;
-      }
-    })
-    .filter((a) => !!a);
-
-  return Object.fromEntries(entries);
+  // console.log("I am working!");
+  const results = {};
+  for (const shortUrl in urlDatabase) {
+    if (urlDatabase[shortUrl].userID === userID) {
+      results[shortUrl] = urlDatabase[shortUrl];
+    }
+  }
+  // console.log(results);
+  return results;
+  // const entries = Object.keys(urlDatabase)
+  //   .map((shortURL) => {
+  //     const entry = urlDatabase[shortURL];
+  //     if (entry.userID === userID) {
+  //       return [shortURL, entry];
+  //     } else {
+  //       return undefined;
+  //     }
+  //   })
+  //   .filter((a) => !!a);
+  // return Object.fromEntries(entries);
 };
 // end of functions
 // ============================================
@@ -145,6 +152,8 @@ app.get("/urls.json", (req, res) => {
 
 // here is the endpoint for list of existing urls
 app.get("/urls", (req, res) => {
+  console.log(req.cookies["user_id"]);
+  console.log(urlDatabase);
   const templateVars = {
     user_id: req.cookies["user_id"],
     urls: urlsForUser(req.cookies["user_id"]),
@@ -153,7 +162,7 @@ app.get("/urls", (req, res) => {
   if (templateVars.user_id) {
     res.render("urls_index", templateVars);
   } else {
-    res.send("Please login to access this page");
+    res.redirect("/login");
   }
 });
 
@@ -248,35 +257,41 @@ app.post("/logout", (req, res) => {
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
-    shortURL: shortURL,
     longURL: req.body.longURL,
-    user_id: req.cookies["user_id"],
+    userID: req.cookies["user_id"],
   };
   res.redirect("http://localhost:8080/urls/" + shortURL);
 });
 
 //updates the URL resource
-app.post("/urls/:id", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.id,
-    fullURL: urlDatabase[req.params.id].longURL,
-    user_id: req.cookies["user_id"],
-    user: listOfUsers,
-  };
-
-  if (req.body.newURL.length > 0) {
-    urlDatabase[req.params.id].longURL = req.body.newURL;
-    res.redirect("/urls");
-  } else {
-    res.redirect("/urls");
+app.post("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const userID = req.cookies["user_id"];
+  const longURL = req.body.longURL;
+  if (longURL.length > 0) {
+    if (userID === urlDatabase[shortURL].userID) {
+      urlDatabase[req.params.shortURL].longURL = longURL;
+      res.redirect("/urls");
+    } else {
+      res.status(400).send("You do not have permission to edit this URL");
+    }
   }
 });
 
 // handles deleting a url
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
+  console.log(urlDatabase[shortURL]);
+  const userID = req.cookies["user_id"];
+  if (!userID) {
+    res.status(400).send("you need to login to delete this url");
+  }
+  if (userID === urlDatabase[shortURL].userID) {
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+  } else {
+    res.status(400).send("You don't have permission to delete this URL");
+  }
 });
 
 // end of post requests
