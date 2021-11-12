@@ -30,8 +30,7 @@ app.use(
 );
 const PORT = 8080;
 
-// ============================================
-// get requests here except for the weird ones
+// ============================================GETS============================================
 
 app.get("/register", (req, res) => {
   const templateVars = {
@@ -108,11 +107,18 @@ app.get("/urls/:id", (req, res) => {
   }
 });
 
-// end of get requests
-// ============================================
-// post requests start here:
+app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL]?.longURL;
 
-// register post endpoint
+  if (longURL == undefined) {
+    res.send("the link you are looking for does not exist");
+  } else {
+    res.redirect(longURL);
+  }
+});
+// ============================================POSTS===========================================
+
 app.post("/register", (req, res) => {
   const randomID = generateRandomString();
   const { email, password } = req.body;
@@ -194,20 +200,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     res.redirect("/urls");
   } else {
     res.status(400).send("You don't have permission to delete this URL");
-  }
-});
-
-// end of post requests
-// ============================================
-// wierd gets that have to be at the end maybe:
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL]?.longURL;
-
-  if (longURL == undefined) {
-    res.send("the link you are looking for does not exist");
-  } else {
-    res.redirect(longURL);
   }
 });
 
