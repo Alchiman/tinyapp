@@ -5,6 +5,13 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
 
+const {
+  emailExists,
+  generateRandomString,
+  getUserByEmail,
+  userAuth,
+} = require("./helpers");
+
 const app = express();
 
 app.set("view engine", "ejs");
@@ -55,41 +62,6 @@ const urlDatabase = {
 
 //============================================
 // Functions start here:
-function generateRandomString() {
-  return Math.random()
-    .toString(15)
-    .substring(4, 9);
-}
-
-const emailExists = function(checkingEmail) {
-  for (const userId in listOfUsers) {
-    if (listOfUsers[userId].email === checkingEmail) {
-      return true;
-    }
-    return false;
-  }
-};
-const userAuth = function(email, password) {
-  // console.log("this is the user sent email", email);
-  // console.log("this is the user sent passwor", password);
-
-  for (const userID in listOfUsers) {
-    if (
-      listOfUsers[userID].email === email &&
-      bcrypt.compareSync(password, listOfUsers[userID].password)
-      // listOfUsers[userID].password === password
-    ) {
-      return listOfUsers[userID].id;
-    }
-  }
-  // console.log(listOfUsers);
-  // console.log("this is database email", listOfUsers["user3RandomID"].email);
-  // console.log(
-  //   "this is database password",
-  //   listOfUsers["user3RandomID"].password
-  // );
-  return false;
-};
 
 const urlsForUser = function(userID) {
   /*
@@ -214,7 +186,7 @@ app.post("/register", (req, res) => {
   const randomID = generateRandomString();
   const { email, password } = req.body;
 
-  if (emailExists(email)) {
+  if (getUserByEmail(email, listOfUsers)) {
     res.status(400);
     res.send("Use another email");
   }
@@ -238,7 +210,7 @@ app.post("/register", (req, res) => {
 // this endpoint handles post for login
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const userId = userAuth(email, password);
+  const userId = userAuth(email, password, listOfUsers);
 
   if (!email || !password) {
     res.status(403).send("your password/email field is empty");
@@ -265,7 +237,8 @@ app.post("/login", (req, res) => {
 
 // endpoint for logout
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  // res.clearCookie("user_id");
+  req.session.user_id = "";
   res.redirect("/urls");
 });
 
