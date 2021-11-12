@@ -31,9 +31,20 @@ const listOfUsers = {
 };
 
 // UrlData
+// const urlDatabase = {
+//   b2xVn2: "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com",
+// };
+
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 //============================================
@@ -99,12 +110,16 @@ app.get("/register", (req, res) => {
 // login get endpoint
 app.get("/login", (req, res) => {
   const templateVars = {
-    shortURL: req.params.id,
-    fullURL: urlDatabase[req.params.id],
+    // shortURL: req.params.id,
+    // fullURL: urlDatabase[req.params.id],
     user_id: req.cookies["user_id"],
     user: listOfUsers,
   };
-  res.render("login", templateVars);
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls/");
+  } else {
+    res.render("login", templateVars);
+  }
 });
 
 // here is the endpoint for list of existing urls
@@ -116,20 +131,32 @@ app.get("/urls", (req, res) => {
 // endpoint for creating new urls
 app.get("/urls/new", (req, res) => {
   const templateVars = {
+    urls: urlDatabase,
     user_id: req.cookies["user_id"],
     users: listOfUsers,
   };
-  if (req.cookies["user_id"]) {
+  if (templateVars.user_id) {
     res.render("urls_new", templateVars);
   } else {
-    res.redirect("/login");
+    res.redirect("/register");
   }
-
-  // if (urlDatabase[req.params.id]) {
-  //   res.render("urls_show", templateVars);
-  // }
-  // res.render("urls_new", templateVars);
 });
+
+app.get("/urls/:id", (req, res) => {
+  const templateVars = {
+    shortURL: req.params.id,
+    fullURL: urlDatabase[req.params.id].longURL,
+    user_id: req.cookies["user_id"],
+    user: users,
+  };
+
+  if (urlDatabase[req.params.id] && req.cookies["user_id"]) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.render("urls_new");
+  }
+});
+
 // end of get requests
 // ============================================
 // post requests start here:
@@ -190,25 +217,30 @@ app.post("/logout", (req, res) => {
 
 // this endpoint handles posts for new
 app.post("/urls", (req, res) => {
-  const longURL = req.body.longURL;
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
-  res.redirect("/urls");
+  urlDatabase[shortURL] = {
+    shortURL: shortURL,
+    longURL: req.body.longURL,
+    user_id: req.cookies["user_id"],
+  };
+  res.redirect("http://localhost:8080/urls/" + shortURL);
 });
 
 //updates the URL resource
 app.post("/urls/:id", (req, res) => {
   const templateVars = {
     shortURL: req.params.id,
-    fullURL: urlDatabase[req.params.id],
+    fullURL: urlDatabase[req.params.id].longURL,
     user_id: req.cookies["user_id"],
     user: listOfUsers,
   };
-  const shortURL = templateVars.shortURL;
-  const longURL = templateVars.longURL;
-  urlDatabase[shortURL] = longURL;
-  res.redirect("/urls");
-  // const shortURL = res;
+
+  if (req.body.newURL.length > 0) {
+    urlDatabase[req.params.id].longURL = req.body.newURL;
+    res.redirect("/urls");
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 // handles deleting a url
@@ -217,18 +249,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
-// come back to to this later for edit
-// app.get("/urls/:shorURL", (req, res) => {
-//   req.render("urls_new");
-// });
 
 // end of post requests
 // ============================================
 // wierd gets that have to be at the end maybe:
-
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   if (!urlDatabase[shortURL]) {
     res.send("The short URL you are looking for does not exist.");
   }
@@ -239,7 +266,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const templateVars = {
     shortURL: shortURL,
-    longURL: urlDatabase[shortURL],
+    longURL: urlDatabase[shortURL].longURL,
     user_id: req.cookies["user_id"],
   };
 
