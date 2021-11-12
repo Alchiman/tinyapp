@@ -10,7 +10,10 @@ const {
   generateRandomString,
   getUserByEmail,
   userAuth,
+  urlsForUser,
 } = require("./helpers");
+
+const { listOfUsers, urlDatabase } = require("./dataBase");
 
 const app = express();
 
@@ -25,75 +28,8 @@ app.use(
     maxAge: 24 * 60 * 60 * 1000,
   })
 );
-const PORT = 8080; // default port 8080
-// const { json } = require("express");
+const PORT = 8080;
 
-// Objects:
-//============================================
-// userData
-const listOfUsers = {
-  userRandomID: {
-    id: "aJ48lW",
-    email: "user@example.com",
-    password: "123",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "123",
-  },
-  user3RandomID: {
-    id: "user3RandomID",
-    email: "alireza.chaychi@gmail.com",
-    password: "000",
-  },
-};
-
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-};
-
-//============================================
-// Functions start here:
-
-const urlsForUser = function(userID) {
-  /*
-  get all the keys of database 
-  the itirate over all the key via map 
-return entrie were the use id matches 
-return undefined otherwise
-filter the undefined results
-
-  */
-  // console.log("I am working!");
-  const results = {};
-  for (const shortUrl in urlDatabase) {
-    if (urlDatabase[shortUrl].userID === userID) {
-      results[shortUrl] = urlDatabase[shortUrl];
-    }
-  }
-  // console.log(results);
-  return results;
-  // const entries = Object.keys(urlDatabase)
-  //   .map((shortURL) => {
-  //     const entry = urlDatabase[shortURL];
-  //     if (entry.userID === userID) {
-  //       return [shortURL, entry];
-  //     } else {
-  //       return undefined;
-  //     }
-  //   })
-  //   .filter((a) => !!a);
-  // return Object.fromEntries(entries);
-};
-// end of functions
 // ============================================
 // get requests here except for the weird ones
 
@@ -109,8 +45,6 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   const templateVars = {
-    // shortURL: req.params.id,
-    // fullURL: urlDatabase[req.params.id],
     user_id: req.session.user_id,
     user: listOfUsers,
   };
@@ -130,15 +64,12 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// login get endpoint
-
-// here is the endpoint for list of existing urls
 app.get("/urls", (req, res) => {
   console.log(req.session.user_id);
   console.log(urlDatabase);
   const templateVars = {
     user_id: req.session.user_id,
-    urls: urlsForUser(req.session.user_id),
+    urls: urlsForUser(req.session.user_id, urlDatabase),
   };
 
   if (templateVars.user_id) {
@@ -203,11 +134,8 @@ app.post("/register", (req, res) => {
     req.session.user_id = randomID;
     res.redirect("/urls");
   }
-
-  // res.json(listOfUsers);
 });
 
-// this endpoint handles post for login
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const userId = userAuth(email, password, listOfUsers);
@@ -221,23 +149,9 @@ app.post("/login", (req, res) => {
   }
   req.session.user_id = userId;
   res.redirect("/urls");
-
-  // for (const userId in listOfUsers) {
-  //   if (
-  //     listOfUsers[userId].email === email &&
-  //     listOfUsers[userId].password === password
-  //   ) {
-  //     res.cookie("user_id", listOfUsers[userId]["id"]);
-  //   } else {
-  //     res.status(403);
-  //     res.send("The email or the password is wrong ");
-  //   }
-  // }
 });
 
-// endpoint for logout
 app.post("/logout", (req, res) => {
-  // res.clearCookie("user_id");
   req.session.user_id = "";
   res.redirect("/urls");
 });
@@ -289,27 +203,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL]?.longURL;
-  // if (!urlDatabase[shortURL]) {
-  //   res.send("The short URL you are looking for does not exist.");
-  // }
+
   if (longURL == undefined) {
     res.send("the link you are looking for does not exist");
   } else {
     res.redirect(longURL);
   }
 });
-
-// app.get("/urls/:shortURL", (req, res) => {
-//   const shortURL = req.params.shortURL;
-//   const templateVars = {
-//     shortURL: shortURL,
-//     longURL: urlDatabase[shortURL].longURL,
-//     // user_id: req.cookies["user_id"],
-//     user_id: "abc",
-//   };
-
-//   res.render("urls_show", templateVars);
-// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

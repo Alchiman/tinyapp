@@ -15,13 +15,17 @@ function generateRandomString() {
     .substring(4, 9);
 }
 
-const getUserByEmail = function(email, database) {
+const getUserByEmail = function(email, dataBase) {
   // lookup magic...
-  for (const user in database) {
-    if (database[user].email === email) {
-      return user;
+  if (email === "") {
+    return undefined;
+  }
+  for (const user in dataBase) {
+    if (dataBase[user].email === email) {
+      return dataBase[user];
     }
   }
+
   return false;
 };
 
@@ -38,9 +42,21 @@ const userAuth = function(email, password, dataBase) {
   return false;
 };
 
+const urlsForUser = function(userID, dataBase) {
+  const results = {};
+  for (const shortUrl in dataBase) {
+    if (dataBase[shortUrl].userID === userID) {
+      results[shortUrl] = dataBase[shortUrl];
+    }
+  }
+  return results;
+  //
+};
+
 module.exports = {
   emailExists,
   generateRandomString,
   getUserByEmail,
   userAuth,
+  urlsForUser,
 };
