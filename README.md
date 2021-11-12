@@ -14,7 +14,6 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["screenshot description"](./reletives/5.PNG)
 
-!["screenshot description"](./reletives/6.PNG)
 
 
 ## Dependencies
