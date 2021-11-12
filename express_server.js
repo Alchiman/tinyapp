@@ -1,20 +1,23 @@
 // const { Template } = require("ejs");
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const app = express();
-const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-// const { json } = require("express");
+
+const app = express();
+
 app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+const PORT = 8080; // default port 8080
+// const { json } = require("express");
 
 // Objects:
 //============================================
 // userData
 const listOfUsers = {
   userRandomID: {
-    id: "userRandomID",
+    id: "aJ48lW",
     email: "user@example.com",
     password: "123",
   },
@@ -29,12 +32,6 @@ const listOfUsers = {
     password: "000",
   },
 };
-
-// UrlData
-// const urlDatabase = {
-//   b2xVn2: "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com",
-// };
 
 const urlDatabase = {
   b6UTxQ: {
@@ -84,20 +81,33 @@ const userAuth = function(email, password) {
   return false;
 };
 
+const urlsForUser = function(userID) {
+  /*
+  get all the keys of database 
+  the itirate over all the key via map 
+return entrie were the use id matches 
+return undefined otherwise
+filter the undefined results
+
+  */
+
+  const entries = Object.keys(urlDatabase)
+    .map((shortURL) => {
+      const entry = urlDatabase[shortURL];
+      if (entry.userID === userID) {
+        return [shortURL, entry];
+      } else {
+        return undefined;
+      }
+    })
+    .filter((a) => !!a);
+
+  return Object.fromEntries(entries);
+};
 // end of functions
 // ============================================
 // get requests here except for the weird ones
 
-// this is the home endpoint
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-// register get endpoint
 app.get("/register", (req, res) => {
   const templateVars = {
     shortURL: req.params.id,
@@ -107,7 +117,7 @@ app.get("/register", (req, res) => {
   };
   res.render("register", templateVars);
 });
-// login get endpoint
+
 app.get("/login", (req, res) => {
   const templateVars = {
     // shortURL: req.params.id,
@@ -122,10 +132,29 @@ app.get("/login", (req, res) => {
   }
 });
 
+// this is the home endpoint
+app.get("/", (req, res) => {
+  res.send("Hello!");
+});
+
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+// login get endpoint
+
 // here is the endpoint for list of existing urls
 app.get("/urls", (req, res) => {
-  const templateVars = { user_id: req.cookies["user_id"], urls: urlDatabase };
-  res.render("urls_index", templateVars);
+  const templateVars = {
+    user_id: req.cookies["user_id"],
+    urls: urlsForUser(req.cookies["user_id"]),
+  };
+
+  if (templateVars.user_id) {
+    res.render("urls_index", templateVars);
+  } else {
+    res.send("Please login to access this page");
+  }
 });
 
 // endpoint for creating new urls
@@ -138,7 +167,7 @@ app.get("/urls/new", (req, res) => {
   if (templateVars.user_id) {
     res.render("urls_new", templateVars);
   } else {
-    res.redirect("/register");
+    res.redirect("/login");
   }
 });
 
@@ -147,13 +176,13 @@ app.get("/urls/:id", (req, res) => {
     shortURL: req.params.id,
     fullURL: urlDatabase[req.params.id].longURL,
     user_id: req.cookies["user_id"],
-    user: users,
+    user: listOfUsers,
   };
 
   if (urlDatabase[req.params.id] && req.cookies["user_id"]) {
     res.render("urls_show", templateVars);
   } else {
-    res.render("urls_new");
+    res.redirect("/urls/new");
   }
 });
 
@@ -255,23 +284,28 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // wierd gets that have to be at the end maybe:
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
-  if (!urlDatabase[shortURL]) {
-    res.send("The short URL you are looking for does not exist.");
+  const longURL = urlDatabase[shortURL]?.longURL;
+  // if (!urlDatabase[shortURL]) {
+  //   res.send("The short URL you are looking for does not exist.");
+  // }
+  if (longURL == undefined) {
+    res.send("the link you are looking for does not exist");
+  } else {
+    res.redirect(longURL);
   }
-  res.redirect(longURL);
 });
 
-app.get("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const templateVars = {
-    shortURL: shortURL,
-    longURL: urlDatabase[shortURL].longURL,
-    user_id: req.cookies["user_id"],
-  };
+// app.get("/urls/:shortURL", (req, res) => {
+//   const shortURL = req.params.shortURL;
+//   const templateVars = {
+//     shortURL: shortURL,
+//     longURL: urlDatabase[shortURL].longURL,
+//     // user_id: req.cookies["user_id"],
+//     user_id: "abc",
+//   };
 
-  res.render("urls_show", templateVars);
-});
+//   res.render("urls_show", templateVars);
+// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
