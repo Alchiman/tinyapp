@@ -64,8 +64,6 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  console.log(req.session.user_id);
-  console.log(urlDatabase);
   const templateVars = {
     user_id: req.session.user_id,
     urls: urlsForUser(req.session.user_id, urlDatabase),
@@ -158,7 +156,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  req.session.user_id = "";
+  req.session.user_id = null;
   res.redirect("/urls");
 });
 
@@ -190,7 +188,6 @@ app.post("/urls/:shortURL", (req, res) => {
 // handles deleting a url
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  console.log(urlDatabase[shortURL]);
   const userID = req.session.user_id;
   if (!userID) {
     res.status(400).send("you need to login to delete this url");
