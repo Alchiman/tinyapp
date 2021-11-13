@@ -2,6 +2,10 @@
 
 TinyApp is a full stack web application built with Node and Express that allows users to shorten long URLs (à la bit.ly).
 
+I was asked to build an HTTP Server that handles requests from the browser. Along the way I was introduced to some more advanced JavaScript and Node concepts, and I also learned more about Express and EJS.
+
+[Here is the link to the deployed server on heroku](https://young-lake-90503.herokuapp.com/register)
+
 ## Final Product
 
 !["screenshot description"](./reletives/1.PNG)
@@ -13,8 +17,6 @@ TinyApp is a full stack web application built with Node and Express that allows 
 !["screenshot description"](./reletives/4.PNG)
 
 !["screenshot description"](./reletives/5.PNG)
-
-
 
 ## Dependencies
 
