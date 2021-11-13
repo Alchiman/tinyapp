@@ -56,7 +56,7 @@ app.get("/login", (req, res) => {
 
 // this is the home endpoint
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -167,7 +167,7 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: req.session.user_id,
   };
-  res.redirect("http://localhost:8080/urls/" + shortURL);
+  res.redirect("/urls");
 });
 
 //updates the URL resource
