@@ -19,7 +19,7 @@
 
         <% if (user_id) { %>
         <a href="#" style="color: black;" class="nav-item nav-link"
-          >Logged In As: <%=user_id%></a
+          >Logged In As: <%=user.email%></a
         >
         <form action="/logout" method="POST">
           <button class="btn btn-secondary" type="submit">LOGOUT</button>

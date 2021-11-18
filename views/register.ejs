@@ -14,8 +14,8 @@
   </head>
   <body class="text-center">
     <%- include('partials/_header') %> <%if(user_id){%>
-    <form method="POST" action="/logout">
-      <strong>Logged in as:</strong> <%= user[user_id].email %>&nbsp;
+    <form style="margin: 60px" method="POST" action="/logout">
+      <strong>Logged in as:</strong> <%= user.email %>&nbsp;
       <input type="submit" value="LOGOUT" />
     </form>
     <% } else{ %>

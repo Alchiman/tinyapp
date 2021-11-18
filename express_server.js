@@ -28,18 +28,22 @@ app.use(
     maxAge: 24 * 60 * 60 * 1000,
   })
 );
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 // ============================================GETS============================================
 
 app.get("/register", (req, res) => {
+  const user_id = req.session.user_id;
   const templateVars = {
-    shortURL: req.params.id,
-    fullURL: urlDatabase[req.params.id],
-    user_id: req.session.user_id,
-    user: listOfUsers,
+    user_id: user_id,
+    user: listOfUsers[user_id],
+    urls: urlDatabase[user_id],
   };
-  res.render("register", templateVars);
+  if (user_id) {
+    res.redirect("/urls");
+  } else {
+    res.render("register", templateVars);
+  }
 });
 
 app.get("/login", (req, res) => {
@@ -59,16 +63,13 @@ app.get("/", (req, res) => {
   res.redirect("/urls");
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
 app.get("/urls", (req, res) => {
+  const user_id = req.session.user_id;
   const templateVars = {
-    user_id: req.session.user_id,
-    urls: urlsForUser(req.session.user_id, urlDatabase),
+    user_id: user_id,
+    user: listOfUsers[user_id],
+    urls: urlDatabase[user_id],
   };
-
   if (templateVars.user_id) {
     res.render("urls_index", templateVars);
   } else {
@@ -78,10 +79,11 @@ app.get("/urls", (req, res) => {
 
 // endpoint for creating new urls
 app.get("/urls/new", (req, res) => {
+  const user_id = req.session.user_id;
   const templateVars = {
-    urls: urlDatabase,
-    user_id: req.session.user_id,
-    users: listOfUsers,
+    user_id: user_id,
+    user: listOfUsers[user_id],
+    urls: urlDatabase[user_id],
   };
   if (templateVars.user_id) {
     res.render("urls_new", templateVars);
@@ -91,11 +93,11 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  const user_id = req.session.user_id;
   const templateVars = {
-    shortURL: req.params.id,
-    fullURL: urlDatabase[req.params.id].longURL,
-    user_id: req.session.user_id,
-    user: listOfUsers,
+    user_id: user_id,
+    user: listOfUsers[user_id],
+    urls: urlDatabase[user_id],
   };
 
   if (urlDatabase[req.params.id] && req.session.user_id) {
@@ -120,6 +122,10 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/register", (req, res) => {
   const randomID = generateRandomString();
   const { email, password } = req.body;
+  const templateVars = {
+    user_id: req.session.user_id,
+    user: listOfUsers,
+  };
 
   if (getUserByEmail(email, listOfUsers)) {
     res.status(400);
@@ -149,14 +155,14 @@ app.post("/login", (req, res) => {
   }
 
   if (!userId) {
-    res.status(403).send("error loggin in ");
+    res.status(403).send("the password/email you entered is wrong! ");
   }
   req.session.user_id = userId;
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  req.session.user_id = null;
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -167,7 +173,11 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: req.session.user_id,
   };
-  res.redirect("/urls");
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.status(400).send("please login!");
+  }
 });
 
 //updates the URL resource

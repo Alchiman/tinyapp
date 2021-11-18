@@ -9,11 +9,6 @@ const listOfUsers = {
     email: "user2@example.com",
     password: "123",
   },
-  user3RandomID: {
-    id: "user3RandomID",
-    email: "alireza.chaychi@gmail.com",
-    password: "000",
-  },
 };
 
 const urlDatabase = {
