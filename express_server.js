@@ -11,7 +11,6 @@ const { listOfUsers, urlDatabase } = require("./dataBase");
 const app = express();
 
 app.set("view engine", "ejs");
-// app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cookieSession({
@@ -161,7 +160,7 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
-// this endpoint handles posts for new
+// this endpoint handles posts for newURLS
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
