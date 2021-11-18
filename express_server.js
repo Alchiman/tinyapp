@@ -68,7 +68,7 @@ app.get("/urls", (req, res) => {
   const templateVars = {
     user_id: user_id,
     user: listOfUsers[user_id],
-    urls: urlDatabase[user_id],
+    urls: urlDatabase,
   };
   if (templateVars.user_id) {
     res.render("urls_index", templateVars);
@@ -98,6 +98,8 @@ app.get("/urls/:id", (req, res) => {
     user_id: user_id,
     user: listOfUsers[user_id],
     urls: urlDatabase[user_id],
+    shortURL: req.params.id,
+    fullURL: urlDatabase[req.params.id].longURL,
   };
 
   if (urlDatabase[req.params.id] && req.session.user_id) {
