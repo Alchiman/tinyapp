@@ -70,7 +70,7 @@ app.get("/urls", (req, res) => {
     user: listOfUsers[user_id],
     urls: urlDatabase,
   };
-  if (templateVars.user_id) {
+  if (user_id) {
     res.render("urls_index", templateVars);
   } else {
     res.redirect("/login");
@@ -80,31 +80,33 @@ app.get("/urls", (req, res) => {
 // endpoint for creating new urls
 app.get("/urls/new", (req, res) => {
   const user_id = req.session.user_id;
-  const templateVars = {
-    user_id: user_id,
-    user: listOfUsers[user_id],
-    urls: urlDatabase[user_id],
-  };
-  if (templateVars.user_id) {
+  if (user_id) {
+    const templateVars = {
+      user_id: user_id,
+      user: listOfUsers[user_id],
+      urls: urlDatabase[user_id],
+    };
     res.render("urls_new", templateVars);
   } else {
+    // res.status(403).send("You need to login to create a new link!");
     res.redirect("/login");
   }
 });
 
 app.get("/urls/:id", (req, res) => {
   const user_id = req.session.user_id;
-  const templateVars = {
-    user_id: user_id,
-    user: listOfUsers[user_id],
-    urls: urlDatabase[user_id],
-    shortURL: req.params.id,
-    fullURL: urlDatabase[req.params.id].longURL,
-  };
 
   if (urlDatabase[req.params.id] && req.session.user_id) {
+    const templateVars = {
+      user_id: user_id,
+      user: listOfUsers[user_id],
+      urls: urlDatabase[user_id],
+      shortURL: req.params.id,
+      fullURL: urlDatabase[req.params.id].longURL,
+    };
     res.render("urls_show", templateVars);
   } else {
+    res.send("the link you are looking for does not exist");
     res.redirect("/urls/new");
   }
 });
