@@ -58,7 +58,6 @@ app.get("/login", (req, res) => {
   }
 });
 
-// this is the home endpoint
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
@@ -77,7 +76,6 @@ app.get("/urls", (req, res) => {
   }
 });
 
-// endpoint for creating new urls
 app.get("/urls/new", (req, res) => {
   const user_id = req.session.user_id;
   if (user_id) {
