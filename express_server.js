@@ -32,10 +32,9 @@ app.get("/register", (req, res) => {
     urls: urlDatabase[user_id],
   };
   if (user_id) {
-    res.redirect("/urls");
-  } else {
-    res.render("register", templateVars);
+    return res.redirect("/urls");
   }
+  res.render("register", templateVars);
 });
 
 app.get("/login", (req, res) => {
@@ -44,10 +43,9 @@ app.get("/login", (req, res) => {
     user: listOfUsers,
   };
   if (req.session.user_id) {
-    res.redirect("/urls/");
-  } else {
-    res.render("login", templateVars);
+    return res.redirect("/urls/");
   }
+  res.render("login", templateVars);
 });
 
 app.get("/", (req, res) => {
@@ -62,10 +60,9 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
   };
   if (user_id) {
-    res.render("urls_index", templateVars);
-  } else {
-    res.redirect("/login");
+    return res.render("urls_index", templateVars);
   }
+  res.redirect("/login");
 });
 
 app.get("/urls/new", (req, res) => {
@@ -76,11 +73,10 @@ app.get("/urls/new", (req, res) => {
       user: listOfUsers[user_id],
       urls: urlDatabase[user_id],
     };
-    res.render("urls_new", templateVars);
-  } else {
-    // res.status(403).send("You need to login to create a new link!");
-    res.redirect("/login");
+    return res.render("urls_new", templateVars);
   }
+  // res.status(403).send("You need to login to create a new link!");
+  res.redirect("/login");
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -97,11 +93,13 @@ app.get("/urls/:id", (req, res) => {
       shortURL: req.params.id,
       fullURL: urlDatabase[req.params.id].longURL,
     };
-    res.render("urls_show", templateVars);
-  } else {
-    res.send("Sorry, you do not own this shortURL");
-    res.redirect("/urls/new");
+    return res.render("urls_show", templateVars);
   }
+  if (!urlDatabase[req.params.id]) {
+    return res.send("Sorry, the URL you are looking for does not exist");
+  }
+  res.send("Sorry, you do not own this shortURL");
+  res.redirect("/urls/new");
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -109,10 +107,9 @@ app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[shortURL]?.longURL;
 
   if (longURL == undefined) {
-    res.send("the link you are looking for does not exist");
-  } else {
-    res.redirect(longURL);
+    return res.send("the link you are looking for does not exist");
   }
+  res.redirect(longURL);
 });
 // ============================================POSTS===========================================
 
@@ -148,11 +145,11 @@ app.post("/login", (req, res) => {
   const userId = userAuth(email, password, listOfUsers);
 
   if (!email || !password) {
-    res.status(403).send("your password/email field is empty");
+    return res.status(403).send("your password/email field is empty");
   }
 
   if (!userId) {
-    res.status(403).send("the password/email you entered is wrong! ");
+    return res.status(403).send("the password/email you entered is wrong! ");
   }
   req.session.user_id = userId;
   res.redirect("/urls");
@@ -171,10 +168,9 @@ app.post("/urls", (req, res) => {
       longURL: req.body.longURL,
       userID: req.session.user_id,
     };
-    res.redirect(`/urls/${shortURL}`);
-  } else {
-    res.status(400).send("please login!");
+    return res.redirect(`/urls/${shortURL}`);
   }
+  res.status(400).send("please login!");
 });
 
 //updates the URL resource
@@ -185,10 +181,10 @@ app.post("/urls/:shortURL", (req, res) => {
   if (longURL.length > 0) {
     if (userID === urlDatabase[shortURL].userID) {
       urlDatabase[req.params.shortURL].longURL = longURL;
-      res.redirect("/urls");
-    } else {
-      res.status(400).send("You do not have permission to edit this URL");
+      return res.redirect("/urls");
     }
+
+    res.status(400).send("You do not have permission to edit this URL");
   }
 });
 
@@ -201,10 +197,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
   if (userID === urlDatabase[shortURL].userID) {
     delete urlDatabase[shortURL];
-    res.redirect("/urls");
-  } else {
-    res.status(400).send("You don't have permission to delete this URL");
+    return res.redirect("/urls");
   }
+  res.status(400).send("You don't have permission to delete this URL");
 });
 
 app.listen(PORT, () => {
