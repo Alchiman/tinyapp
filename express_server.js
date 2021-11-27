@@ -31,6 +31,7 @@ app.get("/register", (req, res) => {
     user: listOfUsers[user_id],
     urls: urlDatabase[user_id],
   };
+
   if (user_id) {
     return res.redirect("/urls");
   }
@@ -42,6 +43,7 @@ app.get("/login", (req, res) => {
     user_id: req.session.user_id,
     user: listOfUsers,
   };
+
   if (req.session.user_id) {
     return res.redirect("/urls/");
   }
@@ -52,6 +54,7 @@ app.get("/", (req, res) => {
   res.redirect("/urls");
 });
 
+// handles the main page
 app.get("/urls", (req, res) => {
   const user_id = req.session.user_id;
   const templateVars = {
@@ -59,12 +62,15 @@ app.get("/urls", (req, res) => {
     user: listOfUsers[user_id],
     urls: urlDatabase,
   };
+
   if (user_id) {
     return res.render("urls_index", templateVars);
   }
+
   res.redirect("/login");
 });
 
+// create new url route
 app.get("/urls/new", (req, res) => {
   const user_id = req.session.user_id;
   if (user_id) {
@@ -75,10 +81,10 @@ app.get("/urls/new", (req, res) => {
     };
     return res.render("urls_new", templateVars);
   }
-  // res.status(403).send("You need to login to create a new link!");
   res.redirect("/login");
 });
 
+// user can read and edit details of short url
 app.get("/urls/:id", (req, res) => {
   const user_id = req.session.user_id;
 
@@ -93,13 +99,16 @@ app.get("/urls/:id", (req, res) => {
       shortURL: req.params.id,
       fullURL: urlDatabase[req.params.id].longURL,
     };
-    return res.render("urls_show", templateVars);
+    res.render("urls_show", templateVars);
   }
+
+  // handles the case if the shortURL does not exist
   if (!urlDatabase[req.params.id]) {
     return res.send("Sorry, the URL you are looking for does not exist");
   }
+
+  // handles the case when the user does not own the shortURL
   res.send("Sorry, you do not own this shortURL");
-  res.redirect("/urls/new");
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -107,8 +116,9 @@ app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[shortURL]?.longURL;
 
   if (longURL == undefined) {
-    return res.send("the link you are looking for does not exist");
+    return res.status(404).send("the link you are looking for does not exist");
   }
+
   res.redirect(longURL);
 });
 // ============================================POSTS===========================================
@@ -122,22 +132,19 @@ app.post("/register", (req, res) => {
   };
 
   if (getUserByEmail(email, listOfUsers)) {
-    res.status(400);
-    res.send("Use another email");
+    return res.status(400).send("Use another email");
   }
 
   if (email === "" || password === "") {
-    res.status(400);
-    res.send("page not found");
-  } else {
-    listOfUsers[randomID] = {
-      id: randomID,
-      email: email,
-      password: bcrypt.hashSync(password, 10),
-    };
-    req.session.user_id = randomID;
-    res.redirect("/urls");
+    return res.status(400).send("page not found");
   }
+  listOfUsers[randomID] = {
+    id: randomID,
+    email: email,
+    password: bcrypt.hashSync(password, 10),
+  };
+  req.session.user_id = randomID;
+  res.redirect("/urls");
 });
 
 app.post("/login", (req, res) => {
