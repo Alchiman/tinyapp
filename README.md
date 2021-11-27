@@ -30,4 +30,4 @@ I was asked to build an HTTP Server that handles requests from the browser. Alon
 ## Getting Started
 
 - Install all dependencies (using the `npm install` command).
-- Run the development web server using the `node express_server.js` command.
+- Run the development web server using the `npm start` command.
