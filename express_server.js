@@ -86,7 +86,10 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const user_id = req.session.user_id;
 
-  if (urlDatabase[req.params.id] && req.session.user_id) {
+  if (
+    urlDatabase[req.params.id] &&
+    req.session.user_id === urlDatabase[req.params.id].userID
+  ) {
     const templateVars = {
       user_id: user_id,
       user: listOfUsers[user_id],
@@ -96,7 +99,7 @@ app.get("/urls/:id", (req, res) => {
     };
     res.render("urls_show", templateVars);
   } else {
-    res.send("the link you are looking for does not exist");
+    res.send("Sorry, you do not own this shortURL");
     res.redirect("/urls/new");
   }
 });
@@ -162,13 +165,13 @@ app.post("/logout", (req, res) => {
 
 // this endpoint handles posts for newURLS
 app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {
-    longURL: req.body.longURL,
-    userID: req.session.user_id,
-  };
   if (req.session.user_id) {
-    res.redirect("/urls");
+    const shortURL = generateRandomString();
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      userID: req.session.user_id,
+    };
+    res.redirect(`/urls/${shortURL}`);
   } else {
     res.status(400).send("please login!");
   }
