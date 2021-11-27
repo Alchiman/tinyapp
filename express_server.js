@@ -104,11 +104,13 @@ app.get("/urls/:id", (req, res) => {
 
   // handles the case if the shortURL does not exist
   if (!urlDatabase[req.params.id]) {
-    return res.send("Sorry, the URL you are looking for does not exist");
+    return res
+      .status(404)
+      .send("Sorry, the URL you are looking for does not exist");
   }
 
   // handles the case when the user does not own the shortURL
-  res.send("Sorry, you do not own this shortURL");
+  res.status(403).send("Sorry, you do not own this shortURL");
 });
 
 app.get("/u/:shortURL", (req, res) => {
