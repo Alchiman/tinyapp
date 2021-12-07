@@ -115,7 +115,7 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL]?.longURL;
+  const longURL = urlDatabase[shortURL].longURL;
 
   if (longURL == undefined) {
     return res.status(404).send("the link you are looking for does not exist");
